@@ -1,8 +1,14 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
+const appInsights = require("applicationinsights");
+appInsights.setup();
+appInsights.defaultClient.config.samplingPercentage = 100; // 33% of all telemetry will be sent to Application Insights
+appInsights.start();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,6 +24,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/health-check', (req, res, next) => {
+  res.status(200).json({ uptime: process.uptime() });
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
